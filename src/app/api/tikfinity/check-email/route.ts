@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
   if (!bucket.ok) {
     const retryAfter = retryAfterSeconds(bucket.resetIn);
     return NextResponse.json(
-      { ok: false, error: "ตรวจสอบบ่อยเกินไป กรุณารอสักครู่" },
+      { ok: false, error: "Too many checks. Please wait a moment." },
       { status: 429, headers: { "Retry-After": String(retryAfter) } },
     );
   }
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   const parsed = Schema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { ok: false, error: "กรุณาใส่ email ให้ถูกต้อง" },
+      { ok: false, error: "Please enter a valid email." },
       { status: 400 },
     );
   }
@@ -39,12 +39,12 @@ export async function POST(req: NextRequest) {
   if (!result.ok) {
     if (result.code === "EMAIL_NOT_FOUND") {
       return NextResponse.json(
-        { ok: false, error: "ไม่พบ email นี้ใน Tikfinity — กรุณาสมัครและล็อกอินใน Tikfinity ก่อนอย่างน้อย 1 ครั้ง" },
+        { ok: false, error: "No Tikfinity account found for this email — sign up and sign in on Tikfinity at least once first." },
         { status: 404 },
       );
     }
     return NextResponse.json(
-      { ok: false, error: "เชื่อมต่อ Tikfinity ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง" },
+      { ok: false, error: "Couldn't reach Tikfinity. Please try again." },
       { status: 502 },
     );
   }

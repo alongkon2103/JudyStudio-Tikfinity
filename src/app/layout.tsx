@@ -27,9 +27,9 @@ const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
   "http://localhost:3000";
 
-const TITLE       = "JudyShop Tikfinity — ต่ออายุ Tikfinity Pro";
+const TITLE       = "JudyShop Tikfinity — Extend your Tikfinity Pro";
 const DESCRIPTION =
-  "ต่ออายุ Tikfinity Pro ราคาดี รับสิทธิ์ทันทีหลังชำระเงิน รองรับบัตรเครดิตและ PromptPay ผ่าน Stripe Checkout";
+  "Extend Tikfinity Pro at a great price — instant activation after payment. Cards and PromptPay supported via Stripe Checkout.";
 // Until launch we keep noindex on; flip NEXT_PUBLIC_ALLOW_INDEX=1 in
 // production env to let search engines pick the site up.
 const ALLOW_INDEX = process.env.NEXT_PUBLIC_ALLOW_INDEX === "1";
@@ -48,16 +48,18 @@ export const metadata: Metadata = {
   keywords: [
     "Tikfinity",
     "Tikfinity Pro",
-    "ต่ออายุ Tikfinity",
+    "Extend Tikfinity Pro",
+    "Tikfinity reseller",
     "TikTok",
     "PromptPay",
-    "Stripe",
+    "Stripe Checkout",
     "JudyShop",
     "Judy Studio",
+    "ต่ออายุ Tikfinity",
   ],
   alternates: {
     canonical: "/",
-    languages: { "th-TH": "/", "en-US": "/" },
+    languages: { "en-US": "/", "th-TH": "/" },
   },
   openGraph: {
     type:        "website",
@@ -65,8 +67,8 @@ export const metadata: Metadata = {
     url:         SITE_URL,
     title:       TITLE,
     description: DESCRIPTION,
-    locale:      "th_TH",
-    alternateLocale: ["en_US"],
+    locale:      "en_US",
+    alternateLocale: ["th_TH"],
     // images is auto-derived from src/app/opengraph-image.png
   },
   twitter: {
@@ -143,7 +145,7 @@ const WEBSITE_JSON_LD = {
   "@type":    "WebSite",
   name:       "JudyShop Tikfinity",
   url:        SITE_URL,
-  inLanguage: ["th-TH", "en-US"],
+  inLanguage: ["en-US", "th-TH"],
 };
 
 export default function RootLayout({

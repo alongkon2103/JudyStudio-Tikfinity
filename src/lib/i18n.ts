@@ -7,8 +7,9 @@ import { en } from "@/locales/en";
  * / `getDict()` directly; client components receive the resolved dict
  * as a prop so they never need their own React context.
  *
- * Default is Thai — the target market is Thai TikTok creators. EN is
- * a secondary surface for international users.
+ * Default is English — the storefront targets international Tikfinity
+ * users first. Thai is a secondary surface; Thai visitors can switch
+ * via the locale toggle and the choice is persisted in the cookie.
  */
 export type Locale = "th" | "en";
 
@@ -16,11 +17,11 @@ export const LOCALE_COOKIE = "judytik_locale";
 
 export function getLocale(): Locale {
   const v = cookies().get(LOCALE_COOKIE)?.value;
-  return v === "en" ? "en" : "th";
+  return v === "th" ? "th" : "en";
 }
 
 export function getDict(locale: Locale = getLocale()): Dict {
-  return locale === "en" ? en : th;
+  return locale === "th" ? th : en;
 }
 
 export type { Dict };

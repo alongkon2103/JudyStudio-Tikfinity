@@ -10,7 +10,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name:             "JudyShop Tikfinity",
     short_name:       "Tikfinity",
-    description:      "ต่ออายุ Tikfinity Pro ราคาดี รับสิทธิ์ทันทีหลังชำระเงิน",
+    description:      "Extend Tikfinity Pro at a great price — instant activation after payment.",
     start_url:        "/",
     display:          "standalone",
     background_color: "#180d2e",

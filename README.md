@@ -1,47 +1,47 @@
 # JudyShop Tikfinity
 
-ระบบขายสิทธิ์ Tikfinity Pro ผ่าน Stripe + auto-fulfillment ผ่าน Tikfinity Reseller API
+Storefront for selling Tikfinity Pro extensions via Stripe Checkout, with auto-fulfillment through the Tikfinity Reseller API.
 
-แยกขาดจาก JudyShop หลัก (DB แยก, deploy แยก) เชื่อมกันแค่ผ่านลิงก์จากหน้าเว็บ JudyShop เท่านั้น
+Runs separately from the main JudyShop site (own DB, own deploy). The two are linked only via outbound links from the JudyShop storefront.
 
 ## Setup
 
-### 1. ติดตั้ง dependencies
+### 1. Install dependencies
 
 ```bash
 cd JudyShopTikfinity
 npm install
 ```
 
-### 2. ตั้งค่า Supabase
+### 2. Configure Supabase
 
-1. สร้าง project ใหม่ที่ https://supabase.com
-2. ไปที่ **Settings → Database** copy:
+1. Create a new project at https://supabase.com
+2. Open **Settings → Database** and copy:
    - **Connection string (Transaction mode)** → `DATABASE_URL`
    - **Connection string (Session mode)** → `DIRECT_URL`
 
-### 3. ตั้งค่า env
+### 3. Configure environment
 
 ```bash
 cp .env.example .env.local
 ```
 
-แก้ค่าในไฟล์ `.env.local`:
+Fill in `.env.local`:
 
-- `DATABASE_URL` / `DIRECT_URL` — จาก Supabase
-- `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` / `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` — จาก Stripe dashboard
-- `TIKFINITY_RESELLER_KEY` — key ที่ tikfinityth.one ออกให้
-- `ADMIN_SESSION_SECRET` — สุ่มยาว 32+ ตัว เช่น `openssl rand -base64 64`
+- `DATABASE_URL` / `DIRECT_URL` — from Supabase
+- `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` / `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` — from the Stripe dashboard
+- `TIKFINITY_RESELLER_KEY` — issued by tikfinityth.one
+- `ADMIN_SESSION_SECRET` — a 32+ character random string, e.g. `openssl rand -base64 64`
 
-### 4. Migrate database
+### 4. Migrate the database
 
 ```bash
-npm run db:push      # ครั้งแรก: push schema เข้า Supabase
-npm run db:seed      # seed product + variant default
-npm run admin:create # สร้าง admin user คนแรก
+npm run db:push      # first time: push schema to Supabase
+npm run db:seed      # seed default product + variants
+npm run admin:create # create the first admin user
 ```
 
-### 5. รัน dev
+### 5. Run dev
 
 ```bash
 npm run dev
