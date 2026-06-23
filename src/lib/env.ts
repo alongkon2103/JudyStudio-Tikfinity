@@ -1,0 +1,55 @@
+/**
+ * Typed access to environment variables.
+ *
+ * Getters defer validation until the property is read, so importing
+ * `env` somewhere shared won't crash the whole app when an unrelated
+ * var is missing.
+ */
+function required(name: string): string {
+  const v = process.env[name];
+  if (!v) throw new Error(`Missing required env var: ${name}`);
+  return v;
+}
+
+function requiredMin(name: string, min: number): string {
+  const v = required(name);
+  if (v.length < min) {
+    throw new Error(
+      `${name} is too short (${v.length} chars) — must be at least ${min} for production use.`,
+    );
+  }
+  return v;
+}
+
+export const env = {
+  get DATABASE_URL() { return required("DATABASE_URL"); },
+  get DIRECT_URL() { return process.env.DIRECT_URL ?? required("DATABASE_URL"); },
+
+  /** 32+ char random string used to sign admin session JWTs. */
+  get ADMIN_SESSION_SECRET() { return requiredMin("ADMIN_SESSION_SECRET", 32); },
+
+  /** Stripe — server-side. */
+  get STRIPE_SECRET_KEY()     { return required("STRIPE_SECRET_KEY"); },
+  get STRIPE_WEBHOOK_SECRET() { return required("STRIPE_WEBHOOK_SECRET"); },
+
+  /** Tikfinity reseller API — server-side only. The key authorizes
+   *  reseller actions (debits credits, mutates user expiry) so it
+   *  must never reach the browser bundle. */
+  get TIKFINITY_API_BASE() {
+    return process.env.TIKFINITY_API_BASE?.trim() || "https://tikfinityth.one/api/reseller";
+  },
+  get TIKFINITY_RESELLER_KEY() { return required("TIKFINITY_RESELLER_KEY"); },
+
+  /** Public site origin for Stripe success/cancel callbacks.
+   *  Falls back to localhost in dev. */
+  get SITE_URL() {
+    return process.env.NEXT_PUBLIC_SITE_URL?.trim() || "http://localhost:3001";
+  },
+
+  get NODE_ENV() {
+    return (process.env.NODE_ENV ?? "development") as
+      | "development"
+      | "production"
+      | "test";
+  },
+} as const;

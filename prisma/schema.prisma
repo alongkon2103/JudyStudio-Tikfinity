@@ -1,0 +1,151 @@
+// JudyShop Tikfinity — schema for Tikfinity Pro reseller storefront.
+//
+// Independent from JudyShop's main DB. The only "product" is Tikfinity
+// Pro with 4 fixed duration variants; we don't model a generic catalog
+// because we never plan to add unrelated products on this storefront.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ── Pricing tiers ────────────────────────────────────────────
+// One row per duration. Cost is what we pay Tikfinity (reseller
+// rate), price is what we charge the customer. Admin adjusts price
+// freely; cost is reference-only and stays in sync with Tikfinity's
+// `rates` field, updated by hand when Tikfinity changes them.
+model Variant {
+  id             String   @id @default(cuid())
+  durationDays   Int      @unique
+  /// Thai display name. Kept as the column historically named `label`
+  /// so existing rows don't need a backfill — schema-level rename only.
+  label          String
+  /// English display name. Optional; UI falls back to `label` when null.
+  labelEn        String?
+  /// Price the customer pays, in satang (1 THB = 100 satang).
+  priceTHBSatang Int
+  /// USD reference price, in cents (1 USD = 100 cents). Shown on the
+  /// public site as a parenthetical so international visitors can
+  /// gauge cost — we still charge THB at Stripe Checkout.
+  priceUSDCents  Int?
+  /// Our cost from Tikfinity reseller API, in satang. Reference only.
+  costTHBSatang  Int
+  isActive       Boolean  @default(true)
+  displayOrder   Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+// ── Payment methods ──────────────────────────────────────────
+// Customer-facing checkout options. We expose two: Card (Stripe card
+// rails) and PromptPay. Stripe handles fees on their side; we
+// optionally pass our own surcharge through to the customer via
+// `feeBps` (basis points — 600 = 6.00%) so the storefront doesn't
+// eat the bank fee on card. Admin tunes both fields from
+// /admin/payment-methods.
+model PaymentMethod {
+  /// "card" | "promptpay". String id because these map 1:1 to
+  /// Stripe's payment_method_types — keeping the same vocabulary
+  /// avoids a translation layer between our DB and Stripe.
+  id           String   @id
+  /// Thai display name.
+  label        String
+  /// English display name.
+  labelEn      String
+  /// Surcharge in basis points (1 bp = 0.01%). Card defaults to 600
+  /// (6.00%), PromptPay to 0. Stored as bps not Decimal so all math
+  /// stays in integers — no Decimal.js round-tripping at API
+  /// boundaries.
+  feeBps       Int      @default(0)
+  isActive     Boolean  @default(true)
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// ── Orders ───────────────────────────────────────────────────
+// One row per customer purchase. Stripe session id is the
+// idempotency anchor: the webhook looks up the order by session id
+// and refuses to fulfill twice.
+model Order {
+  id                  String      @id @default(cuid())
+
+  // Snapshot of customer input (verified server-side before checkout)
+  tikfinityEmail      String
+  channelId           String
+  username            String?
+
+  // Snapshot of variant at time of purchase — price stays stable
+  // even if admin edits the Variant row later.
+  durationDays        Int
+  /// BASE price snapshot. Excludes payment-method fee — that's
+  /// recorded separately in `feeSatang` so the admin orders view
+  /// can show the breakdown.
+  priceTHBSatang      Int
+
+  // Payment method snapshot. "card" / "promptpay" — same vocabulary
+  // as PaymentMethod.id. feeSatang is the surcharge actually applied
+  // at checkout time; we store the resolved amount (not the bps)
+  // because the admin might edit the fee % later and we don't want
+  // historical orders to silently re-price.
+  paymentMethod       String      @default("promptpay")
+  feeSatang           Int         @default(0)
+
+  // Stripe linkage
+  stripeSessionId     String      @unique
+  stripePaymentIntent String?
+
+  // Fulfillment state. An Order row only exists once Stripe has
+  // confirmed payment, so PAID is the entry state — never CANCELLED
+  // or PENDING. From PAID it advances to FULFILLED on success, or
+  // FAILED if Tikfinity's setProExpire call doesn't go through.
+  status              OrderStatus @default(PAID)
+  /// proExpireAt returned by findUserByEmail at purchase time. null if
+  /// the user has never been pro before.
+  oldExpireAt         DateTime?
+  /// proExpireAt after our setProExpire call succeeded.
+  newExpireAt         DateTime?
+  fulfilledAt         DateTime?
+  /// Last error string from Tikfinity API if fulfillment failed.
+  /// Admin can retry from /admin/orders/[id].
+  fulfillmentError    String?
+  fulfillmentAttempts Int         @default(0)
+
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  @@index([tikfinityEmail])
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum OrderStatus {
+  /// Stripe webhook received payment, we're calling Tikfinity now.
+  PAID
+  /// setProExpire succeeded — terminal success.
+  FULFILLED
+  /// Payment received but Tikfinity API call failed — admin retries
+  /// via /admin/orders/[id].
+  FAILED
+}
+
+// ── Admin users ──────────────────────────────────────────────
+// Same shape as JudyShop's AdminUser so the auth code can be lifted
+// 1:1. `tokenVersion` is bumped on logout / password change to
+// invalidate any outstanding session JWTs without server-side
+// session storage.
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  isActive     Boolean  @default(true)
+  tokenVersion Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
