@@ -48,10 +48,11 @@ export default async function AdminAuthedLayout({
             <LogoutButton />
           </div>
         </div>
-        <ul className="flex gap-1 border-t border-line-dark-2 px-4 py-1.5 sm:hidden">
+        <ul className="flex gap-1 overflow-x-auto border-t border-line-dark-2 px-4 py-1.5 sm:hidden">
           <NavItem href="/admin">Dashboard</NavItem>
           <NavItem href="/admin/orders">Orders</NavItem>
           <NavItem href="/admin/pricing">Pricing</NavItem>
+          <NavItem href="/admin/payment-methods">Payments</NavItem>
         </ul>
       </nav>
       <main className="mx-auto max-w-6xl px-4 py-6 anim-fade-up">{children}</main>
@@ -61,10 +62,10 @@ export default async function AdminAuthedLayout({
 
 function NavItem({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <li>
+    <li className="shrink-0">
       <Link
         href={href}
-        className="rounded-md px-2.5 py-1.5 text-[13px] font-semibold text-fg-dark-soft hover:bg-paper hover:text-fg-dark"
+        className="block whitespace-nowrap rounded-md px-2.5 py-1.5 text-[13px] font-semibold text-fg-dark-soft hover:bg-paper hover:text-fg-dark"
       >
         {children}
       </Link>

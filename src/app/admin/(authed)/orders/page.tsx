@@ -67,7 +67,7 @@ export default async function OrdersListPage({
       </form>
 
       <div className="overflow-x-auto rounded-md border border-line-dark bg-paper">
-        <table className="w-full text-[13px]">
+        <table className="w-full min-w-[560px] text-[13px]">
           <thead className="bg-paper-2 text-left text-[10px] font-bold uppercase tracking-[0.12em] text-fg-dark-mute">
             <tr>
               <th className="px-4 py-2">เวลา</th>

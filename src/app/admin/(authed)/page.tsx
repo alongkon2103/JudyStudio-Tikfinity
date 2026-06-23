@@ -100,7 +100,8 @@ export default async function AdminDashboard() {
         {recentOrders.length === 0 ? (
           <p className="px-4 py-8 text-center text-[13px] text-fg-dark-mute">ยังไม่มี order</p>
         ) : (
-          <table className="w-full text-[13px]">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[420px] text-[13px]">
             <thead className="bg-paper-2 text-left text-[10px] font-bold uppercase tracking-[0.12em] text-fg-dark-mute">
               <tr>
                 <th className="px-4 py-2">เวลา</th>
@@ -131,6 +132,7 @@ export default async function AdminDashboard() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </section>
     </div>

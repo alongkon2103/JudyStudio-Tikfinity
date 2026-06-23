@@ -484,6 +484,10 @@ function ConfirmModal({
           // Desktop = centred dialog with breathing room and rounded
           // corners on all four sides.
           "mx-0 mb-0 rounded-t-xl rounded-b-none sm:m-4 sm:rounded-xl",
+          // Cap height to the viewport and scroll internally — body
+          // scroll is locked while open, so on short phones the dialog
+          // must carry its own overflow or the total row gets cut off.
+          "max-h-[90svh] overflow-y-auto",
         )}
       >
         <h2
@@ -666,7 +670,7 @@ function StepIndicator({ step, dict }: { step: Step; dict: Dict }) {
           <li key={item.key} className="flex items-center gap-1.5">
             <span
               className={cn(
-                "flex h-5 w-5 items-center justify-center rounded-pill text-[10px] font-extrabold transition",
+                "flex h-5 w-5 shrink-0 items-center justify-center rounded-pill text-[10px] font-extrabold transition",
                 done
                   ? "bg-cyan-500 text-bg-1000"
                   : active
@@ -676,15 +680,19 @@ function StepIndicator({ step, dict }: { step: Step; dict: Dict }) {
             >
               {done ? <CheckSmall /> : i + 1}
             </span>
+            {/* Labels are wide in Thai — showing all four would overflow a
+                phone. On mobile we surface only the current step's label
+                (the badges still convey progress); sm+ shows every label. */}
             <span
               className={cn(
-                "font-bold uppercase tracking-[0.12em] transition",
+                "whitespace-nowrap font-bold uppercase tracking-[0.12em] transition",
+                active ? "inline" : "hidden sm:inline",
                 active || done ? "text-fg-light" : "text-fg-light-mute",
               )}
             >
               {item.label}
             </span>
-            {i < items.length - 1 && <span className="ml-1 h-px w-4 bg-line-light" aria-hidden />}
+            {i < items.length - 1 && <span className="ml-1 h-px w-4 shrink-0 bg-line-light" aria-hidden />}
           </li>
         );
       })}
